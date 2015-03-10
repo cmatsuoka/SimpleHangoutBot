@@ -1,2 +1,2 @@
 # SimpleHangoutBot
-A Simple Hangout Bot base on Hangups
+A Simple Hangout Bot based on Hangups
