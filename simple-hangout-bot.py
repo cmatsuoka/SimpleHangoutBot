@@ -85,9 +85,10 @@ class SQLiteDB():
 
 class SimpleHangoutBot(object):
     """Bot main class"""
-    def __init__(self, cookies_path, max_retries=5):
+    def __init__(self, cookies_path, db_path, max_retries=5):
         self._client = None
         self._cookies_path = cookies_path
+        self._db_path = db_path
         self._max_retries = max_retries
 
         # These are populated by on_connect when it's called.
@@ -95,7 +96,7 @@ class SimpleHangoutBot(object):
         self._user_list = None # hangups.UserList
 
         # Database to store bot data
-        self._db = SQLiteDB('carcereiro.db')
+        self._db = SQLiteDB(self._db_path)
 
         # List with handled msgs.
         self._res_list = self._re_list([
@@ -288,16 +289,20 @@ def main():
     # Build default paths for files.
     dirs = appdirs.AppDirs('simple-hangout-bot', 'simple-hangout-bot')
     default_cookies_path = os.path.join(dirs.user_data_dir, 'cookies.json')
+    default_db_path = os.path.join(dirs.user_data_dir, 'simple-hangout-bot.db')
+
 
     # Configure argument parser
     parser = argparse.ArgumentParser(prog='simple-hangout-bot',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--cookies', default=default_cookies_path,
                         help='cookie storage path')
+    parser.add_argument('--db', default=default_db_path,
+                        help='db storage path')
     args = parser.parse_args()
 
     # Create necessary directories.
-    for path in [args.cookies]:
+    for path in [args.cookies, args.db]:
         directory = os.path.dirname(path)
         if directory and not os.path.isdir(directory):
             try:
@@ -306,7 +311,7 @@ def main():
                 sys.exit('Failed to create directory: {}'.format(e))
 
     # Run, Bot, Run 
-    bot = SimpleHangoutBot(args.cookies)
+    bot = SimpleHangoutBot(args.cookies, args.db)
     bot.run() 
 
 if __name__ == '__main__':
