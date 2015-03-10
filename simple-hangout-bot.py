@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import appdirs
 import argparse
@@ -7,85 +8,16 @@ import hangups
 import os
 import re
 import signal
-import sqlite3
 import sys
 import time
 
-
-class SQLiteDB():
-    def __init__(self, dbfile):
-        if not os.path.exists(dbfile):
-            self.conn = sqlite3.connect(dbfile)
-            self.cursor = self.conn.cursor()
-            self.create_table()
-
-        self.conn = sqlite3.connect(dbfile)
-        self.cursor = self.conn.cursor()
-
-    def close(self):
-        self.cursor.close()
-        self.conn.close()
-
-    def create_table(self):
-        self.cursor.execute('CREATE TABLE karma(name VARCHAR(30) PRIMARY KEY, total INTEGER);')
-        self.conn.commit()
-
-    def insert_karma(self, name, total):
-        try:
-            self.cursor.execute("INSERT INTO karma(name, total) VALUES ('%s', %d );" % (name, total))
-            self.conn.commit()
-            return True
-        except:
-            return False
-
-    def change_karma(self, name, amount):
-        if not self.insert_karma(name, amount):
-            self.cursor.execute("UPDATE karma SET total = total + (%d) where name = '%s';" % (amount, name))
-            self.conn.commit()
-
-    def increment_karma(self, name):
-        return self.change_karma(name, 1)
-
-    def decrement_karma(self, name):
-        return self.change_karma(name, -1)
-
-    def get_karmas_count(self, desc=True, max_len=400):
-        q = 'SELECT name, total FROM karma order by total'
-        if desc:
-            q += ' desc'
-        self.cursor.execute(q)
-        karmas = ''
-        for l in self.cursor:
-            item = (l[0]) + ' = ' + str(l[1])
-            if len(karmas) == 0:
-                append = item
-            else:
-                append = ', ' + item
-            if len(karmas) + len(append) > max_len:
-                break
-            karmas += append
-
-        return karmas
-
-    def get_karmas(self):
-        self.cursor.execute('SELECT name FROM karma order by total desc')
-        karmas = ''
-        for l in self.cursor:
-            if len(karmas) == 0:
-                karmas = (l[0])
-            else:   
-                karmas = karmas + ', ' + (l[0])
-
-        return karmas
-
-    def get_karma(self, name):
-        self.cursor.execute("SELECT total FROM karma where name = '%s'" % (name))
-        for l in self.cursor:
-                return (l[0])
+import bot.config
+import bot.addon
+from bot.addons import *
 
 class SimpleHangoutBot(object):
     """Bot main class"""
-    def __init__(self, cookies_path, max_retries=5):
+    def __init__(self, config, cookies_path, max_retries=5):
         self._client = None
         self._cookies_path = cookies_path
         self._max_retries = max_retries
@@ -94,17 +26,16 @@ class SimpleHangoutBot(object):
         self._conv_list = None # hangups.ConversationList
         self._user_list = None # hangups.UserList
 
-        # Database to store bot data
-        self._db = SQLiteDB('carcereiro.db')
+        # Our add-ons
+        self._addons = bot.addon.addons(config)
+
+        print('Add-ons:')
+        for addon in self._addons:
+            print('- {0}'.format(addon.name))
+        print()
 
         # List with handled msgs.
         self._res_list = self._re_list([
-            (r'\b(\w(\w|[._-])+)\+\+', self._do_karma),
-            (r'\b(\w(\w|[._-])+)\-\-', self._do_dec_karma),
-
-            (r'^@*karma (\w+) *$', self._do_show_karma),
-            (r'^@*karmas', self._do_dump_karmas),
-
             (r'^ *tu[ -]*dum[\.!]*$''', lambda c,f,m,reply: reply(c, u'PÁ!')),
             (u'(?i)^o* *meu +pai +(é|e)h* +detetive[\.!]*$', lambda c,f,m,reply: reply(c, u'mas o teu é despachante')),
             (u'(?i)ningu[ée]m f(a|e)z nada!', lambda c,f,m,reply: reply(c, u'ninguém f%sz nada! NA-DA!' % (m.group(1)))),
@@ -123,6 +54,9 @@ class SimpleHangoutBot(object):
             ('carcereiro|carcy', lambda c,f,m,reply: reply(c, u'eu?'))
         ])
 
+        for addon in self._addons:
+            self._res_list += addon.res_list
+
         # Handle signals
         try:
             loop = asyncio.get_event_loop()
@@ -130,6 +64,12 @@ class SimpleHangoutBot(object):
                 loop.add_signal_handler(signum, lambda: self.stop())
         except NotImplementedError:
             pass
+
+    # move to responder addon later
+    def _re_list(self, l):
+        """Return a list with functions for compiled regex"""
+        return [(re.compile(r, re.UNICODE), fn) for (r, fn) in l]
+
 
     def login(self, cookies_path):
         """Login to Google account"""
@@ -210,14 +150,15 @@ class SimpleHangoutBot(object):
     def _on_connect(self, initial_data):
         """Handle connecting for the first time"""
         self._user_list = hangups.UserList(self._client,
-                                           initial_data.self_entity,
-                                           initial_data.entities,
-                                           initial_data.conversation_participants)
+                                 initial_data.self_entity,
+                                 initial_data.entities,
+                                 initial_data.conversation_participants)
 
         self._conv_list = hangups.ConversationList(self._client,
-                                                   initial_data.conversation_states,
-                                                   self._user_list,
-                                                   initial_data.sync_timestamp)
+                                 initial_data.conversation_states,
+                                 self._user_list,
+                                 initial_data.sync_timestamp)
+
         self._conv_list.on_event.add_observer(self._on_event)
         print('Connected!')
 
@@ -237,51 +178,6 @@ class SimpleHangoutBot(object):
         except hangups.NetworkError:
             print('Failed to send message!')
 
-    def _re_list(self, l):
-        """Return a list with functions for compiled regex"""
-        return [(re.compile(r, re.UNICODE), fn) for (r, fn) in l]
-
-    def _do_karma(self, conversation, from_user, match, reply):
-        """Increment karma"""
-        var = match.group(1).lower()
-        if from_user.first_name.lower() == var:
-            reply(conversation, "%s, convencido!" % from_user.first_name)
-            return
-
-        self._db.increment_karma(var)
-
-        if var.lower() == 'carcereiro':
-            reply(conversation, 'eu sou foda! ' + str(self._db.get_karma(var)) + ' pontos de karma')
-        else:
-            reply(conversation, var + ' agora tem ' + str(self._db.get_karma(var)) + ' pontos de karma')
-
-    def _do_dec_karma(self, conversation, from_user, match, reply):
-        """Decrement karma"""
-        var = match.group(1).lower()
-        if from_user.first_name.lower() == var:
-            reply(conversation, u"%s, tadinho... vem cá e me dá um abraço!" % from_user.first_name)
-            return
-        
-        self._db.decrement_karma(var)
-    
-        if var.lower() == 'carcereiro':
-            reply(conversation, 'tenho ' + str(self._db.get_karma(var)) + ' pontos de karma agora  :(')
-        else:
-            reply(conversation, var + ' agora tem ' + str(self._db.get_karma(var)) + ' pontos de karma')
-
-    def _do_show_karma(self, conversation, from_user, match, reply):
-        """Show karma of a specific name"""
-        var = match.group(1).lower()
-        points = self._db.get_karma(var)
-        if points is not None:
-            reply(conversation, var + ' tem ' + str(points) + ' pontos de karma')
-        else:
-            reply(conversation, var + " não tem nenhum ponto de karma")
-
-    def _do_dump_karmas(self, conversation, from_user, match, reply):
-        """Show high and low karmas"""
-        reply(conversation, '[+] karmas: ' + self._db.get_karmas_count(True))
-        reply(conversation, '[-] karmas: ' + self._db.get_karmas_count(False))
 
 def main():
     """Main function"""
@@ -291,10 +187,18 @@ def main():
 
     # Configure argument parser
     parser = argparse.ArgumentParser(prog='simple-hangout-bot',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
     parser.add_argument('--cookies', default=default_cookies_path,
                         help='cookie storage path')
+
+    parser.add_argument('-f', '--config-file', metavar='file',
+                        default='simple-hangout-bot.conf',
+                        help='configuration file to use')
+
     args = parser.parse_args()
+
+    config = bot.config.Config(args.config_file)
 
     # Create necessary directories.
     for path in [args.cookies]:
@@ -306,8 +210,8 @@ def main():
                 sys.exit('Failed to create directory: {}'.format(e))
 
     # Run, Bot, Run 
-    bot = SimpleHangoutBot(args.cookies)
-    bot.run() 
+    mybot = SimpleHangoutBot(config, args.cookies)
+    mybot.run() 
 
 if __name__ == '__main__':
     print(main())
