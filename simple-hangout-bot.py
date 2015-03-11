@@ -97,7 +97,8 @@ class SimpleHangoutBot(object):
         conversation = self._conv_list.get(conv_event.conversation_id)
         user = conversation.get_user(conv_event.user_id)
 
-        report('({}) {}'.format(conv_event.user_id.gaia_id, conv_event.text))
+        report('{}:{}> {}'.format(conv_event.conversation_id[:7],
+                            conv_event.user_id.gaia_id[-7:], conv_event.text))
 
         # Don't handle events caused by the bot himself
         if user.is_self:
