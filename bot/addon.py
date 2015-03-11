@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import re
-
 class Addon(object):
     def __init__(self, config, name):
         if name != None:
