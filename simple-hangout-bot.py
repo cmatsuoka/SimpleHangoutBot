@@ -67,6 +67,9 @@ class SimpleHangoutBot(object):
             self._client.on_connect.add_observer(self._on_connect)
             self._client.on_disconnect.add_observer(self._on_disconnect)
 
+            for addon in self._addons:
+                addon.set_client(self._client)
+
             # If we are forcefully disconnected, try connecting again
             loop = asyncio.get_event_loop()
             for retry in range(self._max_retries):

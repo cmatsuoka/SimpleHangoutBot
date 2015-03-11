@@ -15,6 +15,9 @@ class Addon(object):
     def get_timers(self):
         return [ ]
 
+    def set_client(self, client):
+        pass
+
 ADDON = { }
 
 def all():
