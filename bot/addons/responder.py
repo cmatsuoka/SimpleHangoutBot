@@ -6,15 +6,15 @@ Basic responder
 This addon parses key strings and replies accordingly
 '''
 
-from ..addon import Addon, ADDON
+from ..addon import ParseAddon, ADDON
 
 
 _NAME = 'responder'
 
 
-class _ResponderAddon(Addon):
+class _ResponderAddon(ParseAddon):
     def __init__(self, config, name=_NAME):
-        super(_ResponderAddon, self).__init__(config, name)
+        super().__init__(config, name)
 
     def get_res_list(self):
         return [

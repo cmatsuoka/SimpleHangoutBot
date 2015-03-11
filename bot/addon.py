@@ -3,6 +3,10 @@
 import re
 
 class Addon(object):
+    ADDON_TYPE_PARSE = 0
+    ADDON_TYPE_TIMER = 1
+    ADDON_TYPE_IDLE  = 2
+
     def __init__(self, config, name):
         if name != None:
             self.name = name
@@ -11,6 +15,11 @@ class Addon(object):
 
     def get_res_list(self):
         raise NotImplementedError
+
+class ParseAddon(Addon):
+    def __init__(self, config, name):
+        super().__init__(config, name)
+        self._type = self.ADDON_TYPE_PARSE
 
 ADDON = { }
 
