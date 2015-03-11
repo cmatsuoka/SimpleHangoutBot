@@ -17,11 +17,17 @@ from bot.addons import *
 from bot.util import *
 
 class SimpleHangoutBot(object):
+    _FLOOD_COUNT = 2
+
     """Bot main class"""
     def __init__(self, config, cookies_path, max_retries=5):
         self._client = None
         self._cookies_path = cookies_path
         self._max_retries = max_retries
+
+        self._flood_count = { }
+        self._flood_start = { }
+        self._flood_time = 0
 
         # These are populated by on_connect when it's called.
         self._conv_list = None # hangups.ConversationList
@@ -106,7 +112,7 @@ class SimpleHangoutBot(object):
         try:
             for r,fn in self._res_list:
                 match = r.search(text)
-                if match:
+                if match and not self._flood_control(conversation):
                     r = fn(conversation, user, match, reply_func)
                     if not r:
                         return r
@@ -127,6 +133,35 @@ class SimpleHangoutBot(object):
         asyncio.async(
             conversation.send_message(segments)
         ).add_done_callback(self._on_message_sent)
+
+    def _flood_control(self, conversation):
+        try:
+            self._flood_count[conversation] += 1
+        except:
+            self._flood_count[conversation] = 1
+            self._flood_start[conversation] = 0
+
+        t = time.time()
+
+        if self._flood_start[conversation]:
+            if t - self._flood_start[conversation] > 5:
+                self._flood_start[conversation] = 0
+                return False
+            else:
+                return True
+
+        if t - self._flood_time > 2:
+            self._flood_time = t
+
+            if self._flood_count[conversation] > self._FLOOD_COUNT:
+                self._flood_count[conversation] = 0
+                self._flood_start[conversation] = t
+                self.send_message(conversation, 'Flood! 😬')
+                return True
+
+            self._flood_count[conversation] = 0
+
+        return False
 
     def _on_connect(self, initial_data):
         """Handle connecting for the first time"""
