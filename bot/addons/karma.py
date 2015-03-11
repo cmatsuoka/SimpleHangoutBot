@@ -7,7 +7,7 @@ This addon parses karma commands and keeps the chat karma counter
 '''
 
 from ..addon import Addon, ADDON
-from ..database import Database, DATABASE
+from ..database import Database
 
 
 _NAME = "karma"
@@ -84,12 +84,13 @@ class _KarmaAddon(Addon):
         self._db = _KarmaDatabase(config.get('Global', 'dbfile'))
         self._db.create_table()
 
-        self.res_list = self.re_list([
+    def get_res_list(self):
+        return [
             (r'\b(\w(\w|[._-])+)\+\+', self._do_karma),
             (r'\b(\w(\w|[._-])+)\-\-', self._do_dec_karma),
             (r'^@*karma (\w+) *$', self._do_show_karma),
             (r'^@*karmas', self._do_dump_karmas)
-        ])
+        ]
 
     def _do_karma(self, conversation, from_user, match, reply):
         """Increment karma"""
@@ -136,5 +137,4 @@ class _KarmaAddon(Addon):
 
 
 ADDON[_NAME]    = _KarmaAddon
-DATABASE[_NAME] = _KarmaDatabase, _NAME
 

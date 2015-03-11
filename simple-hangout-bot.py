@@ -55,7 +55,7 @@ class SimpleHangoutBot(object):
         ])
 
         for addon in self._addons:
-            self._res_list += addon.res_list
+            self._res_list += self._re_list(addon.get_res_list())
 
         # Handle signals
         try:
@@ -65,7 +65,6 @@ class SimpleHangoutBot(object):
         except NotImplementedError:
             pass
 
-    # move to responder addon later
     def _re_list(self, l):
         """Return a list with functions for compiled regex"""
         return [(re.compile(r, re.UNICODE), fn) for (r, fn) in l]

@@ -22,4 +22,3 @@ class Database(object):
         for l in self.cursor:
             return len(l) > 0
 
-DATABASE = { }

@@ -9,11 +9,6 @@ class Addon(object):
         self._data = ()
         self._config = config
 
-    def re_list(self, l):
-        """Return a list with functions for compiled regex"""
-        return [(re.compile(r, re.UNICODE), fn) for (r, fn) in l]
-
-
 ADDON = { }
 
 def all():
