@@ -6,13 +6,13 @@ Responder for 'carcereiro' personality
 This addon parses key strings and replies accordingly
 '''
 
-from ..addon import ParseAddon, ADDON
+from ..addon import Addon, ADDON
 
 
 _NAME = 'carcereiro'
 
 
-class _CarcereiroAddon(ParseAddon):
+class _CarcereiroAddon(Addon):
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
 

@@ -6,13 +6,13 @@ Basic responder
 This addon parses key strings and replies accordingly
 '''
 
-from ..addon import ParseAddon, ADDON
+from ..addon import Addon, ADDON
 
 
 _NAME = 'responder'
 
 
-class _ResponderAddon(ParseAddon):
+class _ResponderAddon(Addon):
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
 

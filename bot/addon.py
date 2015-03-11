@@ -12,14 +12,20 @@ class Addon(object):
             self.name = name
         self._data = ()
         self._config = config
+        self._type = self.ADDON_TYPE_PARSE
 
     def get_res_list(self):
         raise NotImplementedError
 
-class ParseAddon(Addon):
+class TimerAddon(Addon):
     def __init__(self, config, name):
         super().__init__(config, name)
-        self._type = self.ADDON_TYPE_PARSE
+        self._type = self.ADDON_TYPE_TIMER
+
+class IdleAddon(Addon):
+    def __init__(self, config, name):
+        super().__init__(config, name)
+        self._type = self.ADDON_TYPE_IDLE
 
 ADDON = { }
 

@@ -6,7 +6,7 @@ Karma Manager
 This addon parses karma commands and keeps the chat karma counter
 '''
 
-from ..addon import ParseAddon, ADDON
+from ..addon import Addon, ADDON
 from ..database import Database
 
 
@@ -77,7 +77,7 @@ class _KarmaDatabase(Database):
                 return (l[0])
 
 
-class _KarmaAddon(ParseAddon):
+class _KarmaAddon(Addon):
 
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
