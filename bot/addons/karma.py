@@ -136,5 +136,5 @@ class _KarmaAddon(Addon):
 
 
 
-ADDON[_NAME]    = _KarmaAddon
+ADDON[_NAME] = _KarmaAddon
 

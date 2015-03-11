@@ -9,6 +9,9 @@ class Addon(object):
         self._data = ()
         self._config = config
 
+    def get_res_list(self):
+        raise NotImplementedError
+
 ADDON = { }
 
 def all():
