@@ -15,7 +15,6 @@ _NAME = 'flood'
 
 
 class _FloodAddon(Addon):
-    _FLOOD_COUNT = 2
 
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
@@ -23,6 +22,15 @@ class _FloodAddon(Addon):
         self._flood_count = { }
         self._flood_start = { }
         self._flood_time = 0
+
+        if config.has_options('Flood', [ 'count', 'time', 'disable_time' ]):
+            self._count = config.getint('Flood', 'count')
+            self._time = config.getint('Flood', 'time')
+            self._disable_time = config.getint('Flood', 'disable_time')
+        else:
+            config.add_option('Flood', 'count', '2')
+            config.add_option('Flood', 'time', '2')
+            config.add_option('Flood', 'disable_time', '5')
 
 
     def get_filters(self):
@@ -38,7 +46,7 @@ class _FloodAddon(Addon):
         t = time.time()
 
         if self._flood_start[conversation]:
-            if t - self._flood_start[conversation] > 5:
+            if t - self._flood_start[conversation] > self._disable_time:
                 # End of flood control
                 self._flood_start[conversation] = 0
                 return text
@@ -46,12 +54,10 @@ class _FloodAddon(Addon):
                 # We're still flooded
                 return None
 
-        print(t, self._flood_time)
-
-        if t - self._flood_time > 2:
+        if t - self._flood_time > self._time:
             self._flood_time = t
 
-            if self._flood_count[conversation] > self._FLOOD_COUNT:
+            if self._flood_count[conversation] > self._count:
                 self._flood_count[conversation] = 0
                 self._flood_start[conversation] = t
                 reply_func(conversation, 'Flood! 😬')
