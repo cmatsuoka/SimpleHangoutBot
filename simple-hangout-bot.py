@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import appdirs
-import argparse
-import asyncio
-import hangups
 import os
 import re
-import signal
 import sys
 import time
+import signal
+import asyncio
+import hangups
+import appdirs
+import argparse
 
 import bot.config
 import bot.addon
 from bot.addons import *
+from bot.util import *
 
 class SimpleHangoutBot(object):
     """Bot main class"""
@@ -29,14 +30,12 @@ class SimpleHangoutBot(object):
         # Our add-ons
         self._addons = bot.addon.addons(config)
 
-        print('Add-ons:')
+        report('Add-ons:')
         for addon in self._addons:
-            print('- {0}'.format(addon.name))
-        print()
+            report('- {0}'.format(addon.name))
 
         # List with handled msgs.
         self._res_list = [ ]
-
         for addon in self._addons:
             self._res_list += self._re_list(addon.get_res_list())
 
@@ -48,11 +47,6 @@ class SimpleHangoutBot(object):
         except NotImplementedError:
             pass
 
-    def _re_list(self, l):
-        """Return a list with functions for compiled regex"""
-        return [(re.compile(r, re.UNICODE), fn) for (r, fn) in l]
-
-
     def login(self, cookies_path):
         """Login to Google account"""
         # Authenticate Google user and save auth cookies
@@ -61,7 +55,7 @@ class SimpleHangoutBot(object):
             cookies = hangups.auth.get_auth_stdin(cookies_path)
             return cookies
         except hangups.GoogleAuthError as e:
-            print('Login failed ({})'.format(e))
+            report('Login failed ({})'.format(e))
             return False
 
     def run(self):
@@ -80,10 +74,10 @@ class SimpleHangoutBot(object):
                     loop.run_until_complete(self._client.connect())
                     sys.exit(0)
                 except Exception as e:
-                    print('Client disconnected: {}'.format(e))
-                    print('Connecting again ({} of {})'.format(retry + 1, self._max_retries))
+                    report('Client disconnected: {}'.format(e))
+                    report('Connecting again ({} of {})'.format(retry + 1, self._max_retries))
                     time.sleep(5 + retry * 5)
-            print('Exiting!')
+            report('Exiting!')
         sys.exit(1)
 
     def stop(self):
@@ -96,6 +90,8 @@ class SimpleHangoutBot(object):
         """Handle chat event"""
         conversation = self._conv_list.get(conv_event.conversation_id)
         user = conversation.get_user(conv_event.user_id)
+
+        report('({}) {}'.format(conv_event.user_id.gaia_id, conv_event.text))
 
         # Don't handle events caused by the bot himself
         if user.is_self:
@@ -113,7 +109,7 @@ class SimpleHangoutBot(object):
                         return r
             return True
         except Exception as e:
-            print('Error handling msg: {}'.format(e))
+            report('Error handling msg: {}'.format(e))
 
     def send_message(self, conversation, msg):
         """Send chat message"""
@@ -142,11 +138,11 @@ class SimpleHangoutBot(object):
                                  initial_data.sync_timestamp)
 
         self._conv_list.on_event.add_observer(self._on_event)
-        print('Connected!')
+        report('Connected!')
 
     def _on_disconnect(self):
         """Handle disconnecting"""
-        print('Disconnected!')
+        report('Disconnected!')
 
     def _on_event(self, conv_event):
         """Handle conversation events"""
@@ -158,7 +154,11 @@ class SimpleHangoutBot(object):
         try:
             future.result()
         except hangups.NetworkError:
-            print('Failed to send message!')
+            report('Failed to send message!')
+
+    def _re_list(self, l):
+        """Return a list with functions for compiled regex"""
+        return [(re.compile(r, re.UNICODE), fn) for (r, fn) in l]
 
 
 def main():
@@ -185,6 +185,7 @@ def main():
     # Create necessary directories.
     for path in [args.cookies]:
         directory = os.path.dirname(path)
+        report('Read cookies from {}'.format(directory))
         if directory and not os.path.isdir(directory):
             try:
                 os.makedirs(directory)
@@ -195,5 +196,7 @@ def main():
     mybot = SimpleHangoutBot(config, args.cookies)
     mybot.run() 
 
+
 if __name__ == '__main__':
-    print(main())
+    main()
+
