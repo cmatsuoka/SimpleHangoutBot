@@ -16,7 +16,7 @@ class _CarcereiroAddon(Addon):
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
 
-    def get_res_list(self):
+    def get_parsers(self):
         return [
             (r'^ *tu[ -]*dum[\.!]*$''', lambda c,f,m,reply: reply(c, u'PÁ!')),
             (u'(?i)^o* *meu +pai +(é|e)h* +detetive[\.!]*$', lambda c,f,m,reply: reply(c, u'mas o teu é despachante')),

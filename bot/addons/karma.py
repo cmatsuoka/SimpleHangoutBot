@@ -84,7 +84,7 @@ class _KarmaAddon(Addon):
         self._db = _KarmaDatabase(config.get('Global', 'dbfile'))
         self._db.create_table()
 
-    def get_res_list(self):
+    def get_parsers(self):
         return [
             (r'\b(\w(\w|[._-])+)\+\+', self._do_karma),
             (r'\b(\w(\w|[._-])+)\-\-', self._do_dec_karma),

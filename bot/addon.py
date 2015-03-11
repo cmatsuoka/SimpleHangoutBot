@@ -3,29 +3,17 @@
 import re
 
 class Addon(object):
-    ADDON_TYPE_PARSE = 0
-    ADDON_TYPE_TIMER = 1
-    ADDON_TYPE_IDLE  = 2
-
     def __init__(self, config, name):
         if name != None:
             self.name = name
         self._data = ()
         self._config = config
-        self._type = self.ADDON_TYPE_PARSE
 
-    def get_res_list(self):
-        raise NotImplementedError
+    def get_parsers(self):
+        return [ ]
 
-class TimerAddon(Addon):
-    def __init__(self, config, name):
-        super().__init__(config, name)
-        self._type = self.ADDON_TYPE_TIMER
-
-class IdleAddon(Addon):
-    def __init__(self, config, name):
-        super().__init__(config, name)
-        self._type = self.ADDON_TYPE_IDLE
+    def get_timers(self):
+        return [ ]
 
 ADDON = { }
 

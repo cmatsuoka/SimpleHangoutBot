@@ -37,7 +37,7 @@ class SimpleHangoutBot(object):
         # List with handled msgs.
         self._res_list = [ ]
         for addon in self._addons:
-            self._res_list += self._re_list(addon.get_res_list())
+            self._res_list += self._re_list(addon.get_parsers())
 
         # Handle signals
         try:
