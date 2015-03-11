@@ -10,6 +10,9 @@ class Addon(object):
     def get_parsers(self):
         return [ ]
 
+    def get_filters(self):
+        return [ ]
+
     def get_timers(self):
         return [ ]
 
