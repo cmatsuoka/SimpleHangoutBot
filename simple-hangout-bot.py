@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+#           o
+#           |
+#       .---T---.
+#     -{  O   o  }-
+#       `-.+++.-'
+#           H
+#     o==##[=]##==o
+#     H   #####   H
+#    (T)   H H   (T)
+#          H H
+#         ## ## 
 
 import os
 import re
