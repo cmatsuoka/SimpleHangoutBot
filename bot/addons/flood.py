@@ -23,7 +23,7 @@ class _FloodAddon(Addon):
         self._flood_start = { }
         self._flood_time = 0
 
-	s = _NAME.capitalize()
+        s = _NAME.capitalize()
 
         if config.has_options(s, [ 'count', 'time', 'disable_time' ]):
             self._count = config.getint(s, 'count')
