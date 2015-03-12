@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-#           o
-#           |
-#       .---T---.
-#     -{  O   o  }-
-#       `-.+++.-'
-#           H
-#     o==##[=]##==o
-#     H   #####   H
-#    (T)   H H   (T)
-#          H H
-#         ## ## 
 
 """
 SimpleHangoutBot
@@ -26,7 +14,6 @@ import time
 import signal
 import asyncio
 import hangups
-import appdirs
 import argparse
 
 import bot.config
@@ -36,10 +23,25 @@ from bot.util import *
 
 class SimpleHangoutBot(object):
     """Bot main class"""
-    def __init__(self, config, cookies_path, max_retries=5):
+    def __init__(self, config):
         self._client = None
-        self._cookies_path = cookies_path
-        self._max_retries = max_retries
+        self._db = config.get('Global', 'dbfile')
+        self._cookies_path = config.get('Global', 'cookies')
+        self._max_retries = config.getint('Global', 'max_retries')
+
+        report('                       ')
+        report('       ((  o  ))       ')
+        report('           |           ')
+        report('       .---T---.       ')
+        report('     -{  O   o  }-     Simple Hangout Bot')
+        report('       `-.+++.-\'       written by 404')
+        report('           H           ')
+        report('     o==##[=]##==o     Cookies : {}'.format(self._cookies_path))
+        report('     H   #####   H     Database: {}'.format(self._db))
+        report('    (T)   H H   (T)    ')
+        report('          H H          ')
+        report('         ## ##         ')
+        report('                       ')
 
         # These are populated by on_connect when it's called.
         self._conv_list = None # hangups.ConversationList
@@ -206,16 +208,10 @@ class SimpleHangoutBot(object):
 
 def main():
     """Main function"""
-    # Build default paths for files.
-    dirs = appdirs.AppDirs('simple-hangout-bot', 'simple-hangout-bot')
-    default_cookies_path = os.path.join(dirs.user_data_dir, 'cookies.json')
 
     # Configure argument parser
     parser = argparse.ArgumentParser(prog='simple-hangout-bot',
                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-    parser.add_argument('--cookies', default=default_cookies_path,
-                        help='cookie storage path')
 
     parser.add_argument('-f', '--config-file', metavar='file',
                         default='simple-hangout-bot.conf',
@@ -223,20 +219,24 @@ def main():
 
     args = parser.parse_args()
 
+    # Configuration file
+    report('Read configuration from {}'.format(args.config_file))
     config = bot.config.Config(args.config_file)
+    s = 'Global'
 
-    # Create necessary directories.
-    for path in [args.cookies]:
-        directory = os.path.dirname(path)
-        report('Read cookies from {}'.format(directory))
-        if directory and not os.path.isdir(directory):
-            try:
-                os.makedirs(directory)
-            except OSError as e:
-                sys.exit('Failed to create directory: {}'.format(e))
+    if config.has_options(s, [ 'cookies', 'dbfile', 'max_retries', 'addons' ]):
+        pass   
+    else:
+        config.add_option(s, 'cookies', 'cookies.json')
+        config.add_option(s, 'dbfile', 'simple-hangout-bot.db')
+        config.add_option(s, 'max_retries', '5')
+        config.add_option(s, 'addons', 'responder')
+
+    if config.changed():
+        config.write()
 
     # Run, Bot, Run 
-    mybot = SimpleHangoutBot(config, args.cookies)
+    mybot = SimpleHangoutBot(config)
     mybot.run() 
 
 

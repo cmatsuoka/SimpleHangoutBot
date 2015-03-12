@@ -18,8 +18,6 @@ class Config:
 
         if not os.path.isfile(self._file):
            self._config.add_section('Global')
-           self._config.set('Global', 'dbfile', 'simple-hangout-bot.db')
-           self._config.set('Global', 'addons', 'karma')
         else:
            self._config.read(self._file)
 
