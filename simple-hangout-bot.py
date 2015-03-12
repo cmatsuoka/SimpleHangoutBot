@@ -13,6 +13,12 @@
 #          H H
 #         ## ## 
 
+"""
+SimpleHangoutBot
+
+A Simple Hangout Bot based on Hangups
+"""
+
 import os
 import re
 import sys
