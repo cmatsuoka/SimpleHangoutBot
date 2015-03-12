@@ -228,7 +228,7 @@ def main():
         pass   
     else:
         config.add_option(s, 'cookies', 'cookies.json')
-        config.add_option(s, 'dbfile', 'simple-hangout-bot.db')
+        config.add_option(s, 'dbfile', 'default.db')
         config.add_option(s, 'max_retries', '5')
         config.add_option(s, 'addons', 'responder')
 

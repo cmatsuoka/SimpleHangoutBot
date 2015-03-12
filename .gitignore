@@ -1,2 +1,4 @@
 *.db
 __pycache__
+cookies.json
+simple-hangout-bot.conf
