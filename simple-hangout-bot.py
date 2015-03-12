@@ -120,18 +120,21 @@ class SimpleHangoutBot(object):
         report('{}:{}> {}'.format(conv_event.conversation_id[:7],
                             conv_event.user_id.gaia_id[-7:], conv_event.text))
 
+        text = conv_event.text
+
+        # Apply filter addons
+        for f in self._filters:
+            text = f(conversation, user, text, self.send_message)
+            if text is None:
+                return
+
         # Don't handle events caused by the bot himself
         if user.is_self:
             return
         
-        self.handle_msg(conversation, user, conv_event.text, self.send_message)
+        self.handle_msg(conversation, user, text, self.send_message)
 
     def handle_msg(self, conversation, user, text, reply_func):
-        for f in self._filters:
-            text = f(conversation, user, text, reply_func)
-            if text is None:
-                break
-
         if text is not None:
             try:
                 for r,fn in self._parsers:
