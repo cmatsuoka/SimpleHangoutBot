@@ -23,14 +23,16 @@ class _FloodAddon(Addon):
         self._flood_start = { }
         self._flood_time = 0
 
-        if config.has_options('Flood', [ 'count', 'time', 'disable_time' ]):
-            self._count = config.getint('Flood', 'count')
-            self._time = config.getint('Flood', 'time')
-            self._disable_time = config.getint('Flood', 'disable_time')
+	s = _NAME.capitalize()
+
+        if config.has_options(s, [ 'count', 'time', 'disable_time' ]):
+            self._count = config.getint(s, 'count')
+            self._time = config.getint(s, 'time')
+            self._disable_time = config.getint(s, 'disable_time')
         else:
-            config.add_option('Flood', 'count', '2')
-            config.add_option('Flood', 'time', '2')
-            config.add_option('Flood', 'disable_time', '5')
+            config.add_option(s, 'count', '2')
+            config.add_option(s, 'time', '2')
+            config.add_option(s, 'disable_time', '5')
 
 
     def get_filters(self):
