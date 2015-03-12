@@ -16,7 +16,18 @@ class Addon(object):
     def get_timers(self):
         return [ ]
 
+    # Low-level hooks
+
     def set_client(self, client):
+        pass
+
+    def on_connect(self, initial_data):
+        pass
+
+    def on_event(self, conv_event):
+        pass
+
+    def on_disconnect(self):
         pass
 
 ADDON = { }

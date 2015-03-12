@@ -169,14 +169,26 @@ class SimpleHangoutBot(object):
                                  initial_data.sync_timestamp)
 
         self._conv_list.on_event.add_observer(self._on_event)
+
+        for addon in self._addons:
+            addon.on_connect(initial_data)
+
         report('Connected!')
 
     def _on_disconnect(self):
         """Handle disconnecting"""
+
+        for addon in self._addons:
+            addon.on_disconnect()
+
         report('Disconnected!')
 
     def _on_event(self, conv_event):
         """Handle conversation events"""
+
+        for addon in self._addons:
+            addon.on_event(conv_event)
+
         if isinstance(conv_event, hangups.ChatMessageEvent):
             self.handle_chat_event(conv_event)
 
