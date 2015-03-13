@@ -29,19 +29,19 @@ class SimpleHangoutBot(object):
         self._cookies_path = config.get('Global', 'cookies')
         self._max_retries = config.getint('Global', 'max_retries')
 
-        report('                       ')
-        report('       ((  o  ))       ')
-        report('           |           ')
-        report('       .---T---.       ')
-        report('     -{  O   o  }-     Simple Hangout Bot')
-        report('       `-.+++.-\'       written by 404')
-        report('           H           ')
-        report('     o==##[=]##==o     Cookies : {}'.format(self._cookies_path))
-        report('     H   #####   H     Database: {}'.format(self._db))
-        report('    (T)   H H   (T)    ')
-        report('          H H          ')
-        report('         ## ##         ')
-        report('                       ')
+        report('                     ')
+        report('     ((  o  ))       ')
+        report('         |           ')
+        report('     .---T---.       ')
+        report('   -{  O   o  }-     Simple Hangout Bot')
+        report('     `-.+++.-\'       written by 404')
+        report('         H           ')
+        report('   o==##[=]##==o     Cookies : {}'.format(self._cookies_path))
+        report('   H   #####   H     Database: {}'.format(self._db))
+        report('  (T)   H H   (T)    ')
+        report('        H H          ')
+        report('       ## ##         ')
+        report('                     ')
 
         # These are populated by on_connect when it's called.
         self._conv_list = None # hangups.ConversationList
@@ -52,7 +52,12 @@ class SimpleHangoutBot(object):
 
         report('Add-ons:')
         for addon in self._addons:
-            report('- {0}'.format(addon.name))
+            name = addon.name
+            if addon.version:
+                name += ' ' + addon.version
+            if addon.author:
+                name += ' by ' + addon.author
+            report('- {}'.format(name))
 
         # List with handled msgs.
         self._parsers = [ ]

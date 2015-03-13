@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
 class Addon(object):
+    author = ''
+    version = ''
+    requires = [ ]
+
     def __init__(self, config, name):
         if name != None:
             self.name = name

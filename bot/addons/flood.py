@@ -15,6 +15,7 @@ _NAME = 'flood'
 
 
 class _FloodAddon(Addon):
+    version = '0.1'
 
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
