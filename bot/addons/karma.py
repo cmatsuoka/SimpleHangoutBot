@@ -101,7 +101,7 @@ class _KarmaAddon(Addon):
 
         self._db.increment_karma(var)
 
-        if var.lower() == 'carcereiro':
+        if var.lower() == self._bot_name:
             reply(conversation, 'eu sou foda! ' + str(self._db.get_karma(var)) + ' pontos de karma')
         else:
             reply(conversation, var + ' agora tem ' + str(self._db.get_karma(var)) + ' pontos de karma')
@@ -115,7 +115,7 @@ class _KarmaAddon(Addon):
         
         self._db.decrement_karma(var)
     
-        if var.lower() == 'carcereiro':
+        if var.lower() == self._bot_name:
             reply(conversation, 'tenho ' + str(self._db.get_karma(var)) + ' pontos de karma agora  :(')
         else:
             reply(conversation, var + ' agora tem ' + str(self._db.get_karma(var)) + ' pontos de karma')

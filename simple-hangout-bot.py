@@ -25,6 +25,7 @@ class SimpleHangoutBot(object):
     """Bot main class"""
     def __init__(self, config):
         self._client = None
+        self._name = config.get('Global', 'name')
         self._db = config.get('Global', 'dbfile')
         self._cookies_path = config.get('Global', 'cookies')
         self._max_retries = config.getint('Global', 'max_retries')
@@ -36,9 +37,9 @@ class SimpleHangoutBot(object):
         report('   -{  O   o  }-     Simple Hangout Bot')
         report('     `-.+++.-\'       written by 404')
         report('         H           ')
-        report('   o==##[=]##==o     Cookies : {}'.format(self._cookies_path))
-        report('   H   #####   H     Database: {}'.format(self._db))
-        report('  (T)   H H   (T)    ')
+        report('   o==##[=]##==o     Name    : {}'.format(self._name))
+        report('   H   #####   H     Cookies : {}'.format(self._cookies_path))
+        report('  (T)   H H   (T)    Database: {}'.format(self._db))
         report('        H H          ')
         report('       ## ##         ')
         report('                     ')
@@ -234,13 +235,12 @@ def main():
     config = bot.config.Config(args.config_file)
     s = 'Global'
 
-    if config.has_options(s, [ 'cookies', 'dbfile', 'max_retries', 'addons' ]):
-        pass   
-    else:
-        config.add_option(s, 'cookies', 'cookies.json')
-        config.add_option(s, 'dbfile', 'default.db')
-        config.add_option(s, 'max_retries', '5')
-        config.add_option(s, 'addons', 'responder')
+    # Set default configuration
+    config.add_option(s, 'name', 'Bot')
+    config.add_option(s, 'cookies', 'cookies.json')
+    config.add_option(s, 'dbfile', 'default.db')
+    config.add_option(s, 'max_retries', 5)
+    config.add_option(s, 'addons', 'responder')
 
     if config.changed():
         config.write()

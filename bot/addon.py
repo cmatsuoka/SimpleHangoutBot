@@ -10,6 +10,7 @@ class Addon(object):
             self.name = name
         self._data = ()
         self._config = config
+        self._bot_name = config.get('Global', 'name')
 
     def get_parsers(self):
         return [ ]
