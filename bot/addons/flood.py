@@ -9,7 +9,6 @@ This filter addon halts bot response if a flood is detected
 import time
 
 from ..addon import Addon, ADDON
-from ..util import *
 
 _NAME = 'flood'
 
@@ -53,7 +52,7 @@ class _FloodAddon(Addon):
         if self._flood_start[conversation]:
             if t - self._flood_start[conversation] > self._disable_time:
                 # End of flood control
-                report('Not flooded anymore')
+                self._report('Not flooded anymore')
                 self._flood_start[conversation] = 0
                 self._flood_count[conversation] = 0
                 return text
@@ -67,7 +66,7 @@ class _FloodAddon(Addon):
             if self._flood_count[conversation] > self._count:
                 self._flood_count[conversation] = 0
                 self._flood_start[conversation] = t
-                report('Flood start at {}'.format(t))
+                self._report('Flood start at {}'.format(t))
                 reply_func(conversation, 'Flood! 😬')
                 return None
 

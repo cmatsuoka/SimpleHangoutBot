@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import hangups
+import asyncio
+import bot.util
+
+from bot.util import *
+
 class Addon(object):
     author = ''
     version = ''
@@ -27,7 +33,7 @@ class Addon(object):
     def set_user_list(self, user_list):
         self._user_list = user_list
 
-    def set_conversation_list(self, conv_list):
+    def set_conv_list(self, conv_list):
         self._conv_list = conv_list
 
     # Low-level hooks
@@ -40,6 +46,19 @@ class Addon(object):
 
     def on_disconnect(self):
         pass
+
+    # helpers
+
+    def _report(self, text):
+        report('\033[1;34m[{}]\033[0m {}'.format(self.name, text))
+
+    def _send_user_message(self, user_id, message):
+        for conv in self._conv_list.get_all():
+            participants = sorted((user for user in conv.users if not user.is_self), key=lambda user: user_id)
+            if (len(participants) == 1 and participants[0].id_.chat_id == user_id):
+               segments = [ hangups.ChatMessageSegment(message) ]
+               asyncio.async(conv.send_message(segments))
+
 
 ADDON = { }
 
