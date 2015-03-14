@@ -122,9 +122,14 @@ class SimpleHangoutBot(object):
         """Handle chat event"""
         conversation = self._conv_list.get(conv_event.conversation_id)
         user = conversation.get_user(conv_event.user_id)
+	
+        if conversation.name is None:
+           conv_name = conv_event.conversation_id
+        else:
+           conv_name = conversation.name
 
-        report('{}:{}> {}'.format(conv_event.conversation_id[:7],
-                            conv_event.user_id.gaia_id[-7:], conv_event.text))
+        report('{}:{}> {}'.format(conv_name[:7], user.first_name[:7].ljust(7),
+                                  conv_event.text))
 
         text = conv_event.text
 
@@ -184,7 +189,7 @@ class SimpleHangoutBot(object):
         for addon in self._addons:
             addon.on_connect(initial_data)
             addon.set_conversation_list(self._conv_list)
-            addon.set_user_list(self._conv_list)
+            addon.set_user_list(self._user_list)
 
         report('Connected!')
 

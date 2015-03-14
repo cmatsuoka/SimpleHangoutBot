@@ -21,15 +21,16 @@ class Addon(object):
     def get_timers(self):
         return [ ]
 
-    # Low-level hooks
-    def set_user_list(self, user_list):
-        pass
-
-    def set_conversation_list(self, conversation_list):
-        pass
-
     def set_client(self, client):
         pass
+
+    def set_user_list(self, user_list):
+        self._user_list = user_list
+
+    def set_conversation_list(self, conv_list):
+        self._conv_list = conv_list
+
+    # Low-level hooks
 
     def on_connect(self, initial_data):
         pass
