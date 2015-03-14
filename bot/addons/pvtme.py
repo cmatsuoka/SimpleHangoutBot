@@ -112,7 +112,7 @@ class _PvtMeAddon(Addon):
                                 conv.send_message(segments)
                             )
                     break
-        return None
+        return text
 
     def set_client(self, client):
         self._client = client
