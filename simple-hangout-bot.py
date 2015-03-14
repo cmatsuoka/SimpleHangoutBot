@@ -182,6 +182,8 @@ class SimpleHangoutBot(object):
 
         for addon in self._addons:
             addon.on_connect(initial_data)
+            addon.set_conversation_list(self._conv_list)
+            addon.set_user_list(self._conv_list)
 
         report('Connected!')
 

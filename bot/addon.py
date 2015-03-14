@@ -21,6 +21,11 @@ class Addon(object):
         return [ ]
 
     # Low-level hooks
+    def set_user_list(self, user_list):
+        pass
+
+    def set_conversation_list(self, conversation_list):
+        pass
 
     def set_client(self, client):
         pass
