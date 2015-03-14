@@ -40,12 +40,13 @@ class _FloodAddon(Addon):
 
     def _flood_control(self, conversation, user, text, reply_func):
         try:
-            self._flood_count[conversation] += 0
-            if user.is_self:
-                self._flood_count[conversation] += 1
+            self._flood_count[conversation]
         except:
-            self._flood_count[conversation] = 1
+            self._flood_count[conversation] = 0
             self._flood_start[conversation] = 0
+
+        if user.is_self:
+            self._flood_count[conversation] += 1
 
         t = time.time()
 
