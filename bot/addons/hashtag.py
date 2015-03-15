@@ -37,7 +37,6 @@ class _HashtagDatabase(Database):
         list = ''
         for l in self.cursor:
             list += ' #' + l[0]
-        print(list)
         return list
 
 
@@ -45,7 +44,7 @@ class _HashtagAddon(Addon):
 
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
-        self._db = _HashtagDatabase(config.get('Global', 'dbfile'))
+        self._db = _HashtagDatabase(self._dbfile)
         self._db.create_table()
 
     def get_parsers(self):

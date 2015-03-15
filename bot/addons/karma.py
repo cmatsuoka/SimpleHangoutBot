@@ -81,7 +81,7 @@ class _KarmaAddon(Addon):
 
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
-        self._db = _KarmaDatabase(config.get('Global', 'dbfile'))
+        self._db = _KarmaDatabase(self._dbfile)
         self._db.create_table()
 
     def get_parsers(self):

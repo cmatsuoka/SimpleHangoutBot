@@ -72,7 +72,7 @@ class _PvtMeAddon(Addon):
 
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
-        self._db = _PvtMeDatabase(config.get('Global', 'dbfile'))
+        self._db = _PvtMeDatabase(self._dbfile)
         self._db.create_table()
         self._client = None
 
