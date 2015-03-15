@@ -31,6 +31,7 @@ class _DigestDatabase(Database):
 
 class _DigestAddon(Addon):
 
+    version = '(dev)'
     requires = [ 'hashtag' ]
 
     def __init__(self, config, name=_NAME):

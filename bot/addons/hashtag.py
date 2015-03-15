@@ -42,6 +42,8 @@ class _HashtagDatabase(Database):
 
 class _HashtagAddon(Addon):
 
+    version = '(dev)'
+
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
         self._db = _HashtagDatabase(self._dbfile)
