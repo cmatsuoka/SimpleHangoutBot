@@ -51,15 +51,6 @@ class SimpleHangoutBot(object):
         # Our add-ons
         self._addons = bot.addon.addons(config)
 
-        report('Add-ons:')
-        for addon in self._addons:
-            name = addon.name
-            if addon.version:
-                name += ' ' + addon.version
-            if addon.author:
-                name += ' by ' + addon.author
-            report('- {}'.format(name))
-
         # List with handled msgs.
         self._parsers = [ ]
         self._filters = [ ]

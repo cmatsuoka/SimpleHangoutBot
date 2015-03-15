@@ -66,12 +66,33 @@ ADDON = { }
 def all():
     return ADDON.keys()
 
-def _init(label, config):
-    return ADDON[label](config)
-
 def addons(config):
-    ret = [ _init(i, config) for i in config.getlist('Global', 'addons') ]
+    retval = [ ]
+    loaded = [ ]
+
+    for i in config.getlist('Global', 'addons'):
+        addon = ADDON[i]
+        reqs = ','.join(addon.requires) 
+
+        if len(reqs) > 0 and not set(addon.requires).issubset(set(loaded)):
+            report('** Skip addon **: {} (requires {})'.format(i, reqs))
+        elif i in loaded:
+            report('** Skip addon **: {} (already loaded)'.format(i))
+        else:
+            name = i
+            if addon.version:
+                name += ' ' + addon.version
+            if addon.author:
+                name += ' by ' + addon.author
+            if len(reqs) > 0:
+                name += ' [{}]'.format(reqs)
+            report('Initialize addon: ' + name)
+
+            retval.append(addon(config))
+            loaded.append(i)
+
     if config.changed():
         config.write()
-    return ret
+
+    return retval
 
