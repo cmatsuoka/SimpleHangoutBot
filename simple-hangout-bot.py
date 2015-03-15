@@ -28,7 +28,6 @@ class SimpleHangoutBot(object):
         self._name = config.get('Global', 'name')
         self._db = config.get('Global', 'dbfile')
         self._cookies_path = config.get('Global', 'cookies')
-        self._max_retries = config.getint('Global', 'max_retries')
 
         report('                     ')
         report('     ((  o  ))       ')
@@ -92,14 +91,20 @@ class SimpleHangoutBot(object):
 
             # If we are forcefully disconnected, try connecting again
             loop = asyncio.get_event_loop()
-            for retry in range(self._max_retries):
+            tries = 0
+            while True:
+                tries += 1
                 try:
                     loop.run_until_complete(self._client.connect())
                     sys.exit(0)
                 except Exception as e:
                     report('Client disconnected: {}'.format(e))
-                    report('Connecting again ({} of {})'.format(retry + 1, self._max_retries))
-                    time.sleep(5 + retry * 5)
+                    wait = tries * 5
+                    if wait > 300:
+                        wait = 300
+                    time.sleep(wait)
+                    report('Connecting again ({})'.format(tries))
+
             report('Exiting!')
         sys.exit(1)
 
@@ -233,7 +238,6 @@ def main():
     config.add_option(s, 'name', 'Bot')
     config.add_option(s, 'cookies', 'cookies.json')
     config.add_option(s, 'dbfile', 'default.db')
-    config.add_option(s, 'max_retries', 5)
     config.add_option(s, 'addons', 'responder')
 
     if config.changed():
