@@ -45,8 +45,8 @@ class SimpleHangoutBot(object):
         report('                     ')
 
         # These are populated by on_connect when it's called.
-        self._conv_list = None # hangups.ConversationList
         self._user_list = None # hangups.UserList
+        self._conv_list = None # hangups.ConversationList
 
         # Our add-ons
         self._addons = bot.addon.addons(config)
@@ -178,9 +178,7 @@ class SimpleHangoutBot(object):
         self._conv_list.on_event.add_observer(self._on_event)
 
         for addon in self._addons:
-            addon.on_connect(initial_data)
-            addon.set_conv_list(self._conv_list)
-            addon.set_user_list(self._user_list)
+            addon.on_connect(initial_data, self._user_list, self._conv_list)
 
         report('Connected!')
 

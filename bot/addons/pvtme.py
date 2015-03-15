@@ -74,7 +74,6 @@ class _PvtMeAddon(Addon):
         super().__init__(config, name)
         self._db = _PvtMeDatabase(self._dbfile)
         self._db.create_table()
-        self._client = None
 
     def get_parsers(self):
         return [
@@ -102,9 +101,6 @@ class _PvtMeAddon(Addon):
 
                     break
         return text
-
-    def set_client(self, client):
-        self._client = client
 
     def _set_keywords(self, conversation, from_user, match, reply):
         keywords = match.group(1).lower()

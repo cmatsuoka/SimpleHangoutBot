@@ -29,24 +29,20 @@ class Addon(object):
         return [ ]
 
     def set_client(self, client):
-        pass
-
-    def set_user_list(self, user_list):
-        self._user_list = user_list
-
-    def set_conv_list(self, conv_list):
-        self._conv_list = conv_list
+        self._client = client
 
     # Low-level hooks
 
-    def on_connect(self, initial_data):
-        pass
+    def on_connect(self, initial_data, user_list, conv_list):
+        self._user_list = user_list
+        self._conv_list = conv_list
 
     def on_event(self, conv_event):
         pass
 
     def on_disconnect(self):
-        pass
+        self._user_list = None
+        self._conv_list = None
 
     # helpers
 
