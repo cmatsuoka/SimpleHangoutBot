@@ -16,8 +16,8 @@ class Addon(object):
             self.name = name
         self._data = ()
         self._config = config
-        self._bot_name = config.get('Global', 'name')
-        self._dbfile = config.get('Global', 'dbfile')
+        self.bot_name = config.get('Global', 'name')
+        self.dbfile = config.get('Global', 'dbfile')
 
     def get_parsers(self):
         return [ ]
@@ -46,7 +46,7 @@ class Addon(object):
 
     # helpers
 
-    def _report(self, text):
+    def report(self, text):
         report('\033[1;34m[{}]\033[0m {}'.format(self.name, text))
 
     def _send_user_message(self, user_id, message):
@@ -67,7 +67,12 @@ def addons(config):
     loaded = [ ]
 
     for i in config.getlist('Global', 'addons'):
-        addon = ADDON[i]
+        try:
+            addon = ADDON[i]
+        except:
+            report('** Skip addon **: {} not defined'.format(i))
+            continue
+
         reqs = ','.join(addon.requires) 
 
         if len(reqs) > 0 and not set(addon.requires).issubset(set(loaded)):

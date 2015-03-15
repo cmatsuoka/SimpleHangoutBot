@@ -4,21 +4,34 @@ import os
 import sqlite3
 
 class Database(object):
-    def __init__(self, dbfile):
-        if not os.path.exists(dbfile):
-            self.conn = sqlite3.connect(dbfile)
-            self.cursor = self.conn.cursor()
-            self.create_table()
-
-        self.conn = sqlite3.connect(dbfile)
-        self.cursor = self.conn.cursor()
+    def __init__(self, addon):
+        self._addon = addon
+        self._conn = sqlite3.connect(addon.dbfile)
+        self._cursor = self._conn.cursor()
 
     def close(self):
-        self.cursor.close()
-        self.conn.close()
+        self._cursor.close()
+        self._conn.close()
 
     def table_exists(self, name):
-        self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='%s'" % (name))
-        for l in self.cursor:
+        self._cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='%s'" % (name))
+        for l in self._cursor:
             return len(l) > 0
 
+    def query(self, q):
+        try:
+            self._cursor.execute(q)
+            return self._cursor
+        except sqlite3.Error as e:
+            self.report(e)
+            raise e
+
+    def commit(self):
+        try:
+            self._conn.commit()
+        except sqlite3.Error as e:
+            self.report(e)
+            raise e
+
+    def report(self, text):
+        self._addon.report('Database: ' + text)

@@ -20,12 +20,12 @@ _NAME = 'digest'
 
 class _DigestDatabase(Database):
 
-    def __init__(self, dbfile):
-        super().__init__(dbfile)
+    def __init__(self, addon):
+        super().__init__(addon)
 
     def get_digest(self, conversation, user):
-        self.cursor.execute("SELECT text FROM hashtag WHERE conversation='{}' AND user='{}';".format(conversation, user))
-        for l in self.cursor:
+        result = self.query("SELECT text FROM hashtag WHERE conversation='{}' AND user='{}';".format(conversation, user))
+        for l in result:
             yield l[0]
 
 
@@ -36,7 +36,7 @@ class _DigestAddon(Addon):
 
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
-        self._db = _DigestDatabase(self._dbfile)
+        self._db = _DigestDatabase(self)
 
     def get_parsers(self):
         return [
@@ -45,7 +45,7 @@ class _DigestAddon(Addon):
 
     def _do_daily_digest(self, conversation, from_user, match, reply):
         """List tagged texts"""
-        self._report("list hashtags")
+        self.report("list hashtags")
         for i in self._db.get_digest(conversation.id_, from_user.id_.chat_id):
             self._send_user_message(from_user.id_.chat_id, i)
 
