@@ -32,8 +32,8 @@ class _HashtagDatabase(Database):
         except:
             return False
 
-    def get_hashtags(self, conversation, max_len=400):
-        self.cursor.execute("SELECT DISTINCT name FROM hashtag WHERE conversation='{}';".format(conversation.id_))
+    def get_hashtags(self, conversation_id, max_len=400):
+        self.cursor.execute("SELECT DISTINCT name FROM hashtag WHERE conversation='{}';".format(conversation_id))
         list = ''
         for l in self.cursor:
             list += ' #' + l[0]
@@ -62,7 +62,7 @@ class _HashtagAddon(Addon):
     def _do_list_hashtags(self, conversation, from_user, match, reply):
         """List existing hashtags"""
         self._report("list hashtags")
-        reply(conversation, self._db.get_hashtags(conversation))
+        reply(conversation, self._db.get_hashtags(conversation.id_))
 
 
 
