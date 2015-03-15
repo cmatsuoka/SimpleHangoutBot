@@ -149,8 +149,8 @@ class SimpleHangoutBot(object):
         if text is not None:
             try:
                 for r,fn in self._parsers:
-                    match = r.search(text)
-                    if match:
+                    for match in re.finditer(r,text):
+                        report("Pattern match: '{}'".format(match.group()))
                         r = fn(conversation, user, match, reply_func)
                         if not r:
                             return r
