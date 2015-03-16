@@ -87,7 +87,7 @@ class _LearnDatabase(Database):
 
 class _LearnAddon(Addon):
 
-    version = '(dev)'
+    version = '0.1'
 
     def __init__(self, config, name=_NAME):
         super().__init__(config, name)
@@ -101,7 +101,7 @@ class _LearnAddon(Addon):
         if config.has_options(s, [ 'isolation' ]):
             self._isolation = config.getboolean(s, 'isolation')
         else:
-            config.add_option(s, 'isolation', 'False')
+            config.add_option(s, 'isolation', 'True')
 
     def get_parsers(self):
         return [
