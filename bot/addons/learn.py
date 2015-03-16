@@ -203,7 +203,7 @@ class _LearnAddon(Addon):
             conv = None
         name = match.group(1)
 
-        if not self._db.exists(name, conversation.id_):
+        if not self._db.exists(name, conv):
             reply(conversation, '{}?'.format(name))
             return True
 
