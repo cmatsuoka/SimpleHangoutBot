@@ -84,7 +84,7 @@ class _PvtMeAddon(Addon):
         return [ self._check_match ]
 
     def _check_match(self, conversation, user, text, reply_func):
-        if text.startswith("/pvtme") or user.is_self:
+        if text.startswith('/') or user.is_self:
             return text
 
         keywords = self._db.get_keywords_for_conversation(conversation.id_)

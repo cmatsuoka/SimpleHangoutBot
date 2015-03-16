@@ -29,6 +29,15 @@ class _LearnDatabase(Database):
         except:
             return False
 
+    def exists(self, name):
+        try:
+            result = self.query("SELECT COUNT(name) FROM learn WHERE name='{}';".format(name))
+            for l in result:
+                return int(l[0]) > 0
+        except:
+            return False
+            
+
     def insert(self, name, conversation_id, pattern, reply):
         try:
             self.query("INSERT INTO learn(name, conversation, pattern, reply) VALUES ('{}','{}','{}','{}');".format(name, conversation_id, pattern, reply))
@@ -69,7 +78,7 @@ class _LearnAddon(Addon):
     def get_parsers(self):
         return [
             (r'^/learn help\s*$', self._do_learn_help),
-            (r'^/learn delete\s+(\w+)\s*$', self._do_learn_delete),
+            (r'^/learn forget\s+(\w+)\s*$', self._do_learn_delete),
             (r'^/learn\s+(\w+)\s+/(.*)/\s+(.*)\s*$', self._do_learn),
             (r'^/learn', self._do_learn_help)
         ]
@@ -80,23 +89,40 @@ class _LearnAddon(Addon):
         ]
 
     def _responder(self, conversation, user, text, reply_func):
-        if text is not None:
-            try:
-                for k in self._knowledge:
-                    conv = k[0]
-                    pattern = k[1]
-                    reply = k[2]
-                    for match in re.finditer(pattern, text):
-                        self.report("Pattern match: '{}'".format(match.group()))
-                        reply_func(conversation, reply)
-            except Exception as e:
-                self.report('Error handling msg: {}'.format(e))
+        if text.startswith('/') or user.is_self:
+            return text
+
+        try:
+            for k in self._knowledge:
+                conv = k[0]
+                pattern = k[1]
+                reply = k[2]
+
+                regex = re.compile(pattern)
+                match = regex.search(text)
+                if match:
+                    self.report("Pattern match: '{}'".format(match.group()))
+                    reply = reply.replace('$ME', self.bot_name)
+                    reply = reply.replace('$YOU', user.first_name)
+                    for i in range(1, regex.groups + 1):
+                        print('$' + str(i))
+                        reply = reply.replace('$' + str(i), match.group(i))
+                    reply_func(conversation, reply)
+        except Exception as e:
+            self.report('Error handling msg: {}'.format(e))
+
         return text
 
     def _do_learn(self, conversation, from_user, match, reply):
         name = match.group(1)
         regexp = match.group(2)
         myreply = match.group(3)
+
+        if self._db.exists(name):
+            self.report('Attempt to redefine ' + name)
+            reply(conversation, 'Redefine.')
+            return True
+
         self.report('learn {} /{}/ -> {}'.format(name, regexp, myreply))
         self._db.insert(name, conversation.id_, regexp, myreply)
         self._knowledge = self._db.retrieve()
@@ -110,7 +136,7 @@ class _LearnAddon(Addon):
 
     def _do_learn_help(self, conversation, from_user, match, reply):
         reply(conversation, '/learn name /regexp/ reply')
-        reply(conversation, '/learn delete name')
+        reply(conversation, '/learn forget name')
         reply(conversation, 'Special vars: $ME $YOU $CONV $1, $2...')
         return True
 

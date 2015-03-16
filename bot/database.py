@@ -14,9 +14,9 @@ class Database(object):
         self._conn.close()
 
     def table_exists(self, name):
-        self._cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='%s'" % (name))
+        self._cursor.execute("SELECT COUNT(name) FROM sqlite_master WHERE type='table' AND name='%s'" % (name))
         for l in self._cursor:
-            return len(l) > 0
+            return int(l[0]) > 0
 
     def query(self, q):
         try:
