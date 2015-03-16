@@ -149,6 +149,7 @@ class SimpleHangoutBot(object):
                         report("Pattern match: '{}'".format(match.group()))
                         ret = fn(conversation, user, match, reply_func)
                         if ret is False:
+                            report('Input consumed')
                             return ret
                 return True
             except Exception as e:

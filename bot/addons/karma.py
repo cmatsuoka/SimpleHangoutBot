@@ -97,7 +97,7 @@ class _KarmaAddon(Addon):
         var = match.group(1).lower()
         if from_user.first_name.lower() == var:
             reply(conversation, "%s, convencido!" % from_user.first_name)
-            return
+            return False
 
         self._db.increment_karma(var)
 
@@ -106,12 +106,14 @@ class _KarmaAddon(Addon):
         else:
             reply(conversation, var + ' agora tem ' + str(self._db.get_karma(var)) + ' pontos de karma')
 
+        return False
+
     def _do_dec_karma(self, conversation, from_user, match, reply):
         """Decrement karma"""
         var = match.group(1).lower()
         if from_user.first_name.lower() == var:
             reply(conversation, u"%s, tadinho... vem cá e me dá um abraço!" % from_user.first_name)
-            return
+            return False
         
         self._db.decrement_karma(var)
     
@@ -119,6 +121,8 @@ class _KarmaAddon(Addon):
             reply(conversation, 'tenho ' + str(self._db.get_karma(var)) + ' pontos de karma agora  :(')
         else:
             reply(conversation, var + ' agora tem ' + str(self._db.get_karma(var)) + ' pontos de karma')
+
+        return False
 
     def _do_show_karma(self, conversation, from_user, match, reply):
         """Show karma of a specific name"""
