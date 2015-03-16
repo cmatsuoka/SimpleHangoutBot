@@ -53,6 +53,26 @@ class _LearnDatabase(Database):
         except:
             return False
 
+    def list_names(self, conversation_id):
+        if conversation_id is None:
+            result = self.query("SELECT name FROM learn;")
+        else:
+            result = self.query("SELECT name FROM learn WHERE conversation='{}';".format(conversation_id))
+        names = ''
+        for l in result:
+            names += ' ' + l[0]
+        return names
+
+    def show(self, name, conversation_id):
+        if conversation_id is None:
+            result = self.query("SELECT pattern,reply FROM learn WHERE name='{}';".format(name))
+        else:
+            print("SELECT pattern,reply FROM learn WHERE name='{}' AND conversation='{}';".format(name, conversation_id))
+            result = self.query("SELECT pattern,reply FROM learn WHERE name='{}' AND conversation='{}';".format(name, conversation_id))
+        for l in result:
+            return '{}: /{}/ -> {}'.format(name, l[0], l[1])
+        return 'Error.'
+
     def retrieve(self):
         try:
             result = self.query("SELECT conversation,pattern,reply FROM learn;")
@@ -81,12 +101,14 @@ class _LearnAddon(Addon):
         if config.has_options(s, [ 'isolation' ]):
             self._isolation = config.getboolean(s, 'isolation')
         else:
-            config.add_option(s, 'isolation', 'True')
+            config.add_option(s, 'isolation', 'False')
 
     def get_parsers(self):
         return [
             (r'^/learn help\s*$', self._do_learn_help),
-            (r'^/learn forget\s+(\w+)\s*$', self._do_learn_delete),
+            (r'^/learn list', self._do_learn_list),
+            (r'^/learn show\s+(\w+)\s*$', self._do_learn_show),
+            (r'^/learn forget\s+(\w+)\s*$', self._do_learn_forget),
             (r'^/learn\s+(\w+)\s+/(.*)/\s+(.*)\s*$', self._do_learn),
             (r'^/learn', self._do_learn_help)
         ]
@@ -116,7 +138,6 @@ class _LearnAddon(Addon):
                     reply = reply.replace('$ME', self.bot_name)
                     reply = reply.replace('$YOU', user.first_name)
                     for i in range(1, regex.groups + 1):
-                        print('$' + str(i))
                         reply = reply.replace('$' + str(i), match.group(i))
                     reply_func(conversation, reply)
         except Exception as e:
@@ -140,7 +161,24 @@ class _LearnAddon(Addon):
         reply(conversation, 'Ok.')
         return True
 
-    def _do_learn_delete(self, conversation, from_user, match, reply):
+    def _do_learn_list(self, conversation, from_user, match, reply):
+        if self._isolation:
+            conv = conversation.id_
+        else:
+            conv = None
+        reply(conversation, self._db.list_names(conv))
+        return True
+
+    def _do_learn_show(self, conversation, from_user, match, reply):
+        if self._isolation:
+            conv = conversation.id_
+        else:
+            conv = None
+        name = match.group(1)
+        reply(conversation, self._db.show(name, conv))
+        return True
+
+    def _do_learn_forget(self, conversation, from_user, match, reply):
         name = match.group(1)
         self._db.delete(name, conversation.id_)
         return True
