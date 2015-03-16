@@ -147,9 +147,9 @@ class SimpleHangoutBot(object):
                 for r,fn in self._parsers:
                     for match in re.finditer(r,text):
                         report("Pattern match: '{}'".format(match.group()))
-                        r = fn(conversation, user, match, reply_func)
-                        if not r:
-                            return r
+                        ret = fn(conversation, user, match, reply_func)
+                        if ret is False:
+                            return ret
                 return True
             except Exception as e:
                 report('Error handling msg: {}'.format(e))
