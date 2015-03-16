@@ -10,6 +10,7 @@ from ..addon import Addon, ADDON
 from ..database import Database
 import re
 import time
+from hangups.user import UserID
 
 
 _NAME = 'learn'
@@ -23,7 +24,7 @@ class _LearnDatabase(Database):
     def create_table(self):
         try:
             if not self.table_exists('learn'):
-                self.query('CREATE TABLE learn(name VARCHAR PRIMARY KEY, conversation VARCHAR, pattern VARCHAR, reply VARCHAR);')
+                self.query('CREATE TABLE learn(name VARCHAR PRIMARY KEY, conversation VARCHAR, user VARCHAR, pattern VARCHAR, reply VARCHAR);')
                 self.commit()
             return True
         except:
@@ -38,9 +39,9 @@ class _LearnDatabase(Database):
             return False
             
 
-    def insert(self, name, conversation_id, pattern, reply):
+    def insert(self, name, conversation_id, user_id, pattern, reply):
         try:
-            self.query("INSERT INTO learn(name, conversation, pattern, reply) VALUES ('{}','{}','{}','{}');".format(name, conversation_id, pattern, reply))
+            self.query("INSERT INTO learn(name, conversation, user, pattern, reply) VALUES ('{}','{}','{}','{}','{}');".format(name, conversation_id, user_id, pattern, reply))
             self.commit()
             return True
         except:
@@ -67,11 +68,19 @@ class _LearnDatabase(Database):
         if conversation_id is None:
             result = self.query("SELECT pattern,reply FROM learn WHERE name='{}';".format(name))
         else:
-            print("SELECT pattern,reply FROM learn WHERE name='{}' AND conversation='{}';".format(name, conversation_id))
             result = self.query("SELECT pattern,reply FROM learn WHERE name='{}' AND conversation='{}';".format(name, conversation_id))
         for l in result:
-            return '{}: /{}/ -> {}'.format(name, l[0], l[1])
-        return 'Error.'
+            return (l[0], l[1])
+        return None
+
+    def show_author(self, name, conversation_id):
+        if conversation_id is None:
+            result = self.query("SELECT user FROM learn WHERE name='{}';".format(name))
+        else:
+            result = self.query("SELECT user FROM learn WHERE name='{}' AND conversation='{}';".format(name, conversation_id))
+        for l in result:
+            return l[0]
+        return None
 
     def retrieve(self):
         try:
@@ -107,6 +116,7 @@ class _LearnAddon(Addon):
         return [
             (r'^/learn help\s*$', self._do_learn_help),
             (r'^/learn list', self._do_learn_list),
+            (r'^/learn blame\s+(\w+)\s*$', self._do_learn_blame),
             (r'^/learn show\s+(\w+)\s*$', self._do_learn_show),
             (r'^/learn forget\s+(\w+)\s*$', self._do_learn_forget),
             (r'^/learn\s+(\w+)\s+/(.*)/\s+(.*)\s*$', self._do_learn),
@@ -147,7 +157,7 @@ class _LearnAddon(Addon):
 
     def _do_learn(self, conversation, from_user, match, reply):
         name = match.group(1)
-        regexp = match.group(2)
+        pattern = match.group(2)
         myreply = match.group(3)
 
         if self._db.exists(name):
@@ -155,8 +165,8 @@ class _LearnAddon(Addon):
             reply(conversation, 'Redefine.')
             return True
 
-        self.report('learn {} /{}/ -> {}'.format(name, regexp, myreply))
-        self._db.insert(name, conversation.id_, regexp, myreply)
+        self.report('learn {} /{}/ -> {}'.format(name, pattern, myreply))
+        self._db.insert(name, conversation.id_, from_user.id_.gaia_id, pattern, myreply)
         self._knowledge = self._db.retrieve()
         reply(conversation, 'Ok.')
         return True
@@ -175,7 +185,29 @@ class _LearnAddon(Addon):
         else:
             conv = None
         name = match.group(1)
-        reply(conversation, self._db.show(name, conv))
+        val = self._db.show(name, conv)
+        if val is not None:
+            reply(conversation, '{}: /{}/ -> {}'.format(name, val[0], val[1]))
+        else:
+            reply(conversation, 'Error.')
+        return True
+
+    def _do_learn_blame(self, conversation, from_user, match, reply):
+        if self._isolation:
+            conv = conversation.id_
+        else:
+            conv = None
+        name = match.group(1)
+        userid = self._db.show_author(name, conv)
+
+        if userid is not None:
+            id_ = UserID(chat_id=userid, gaia_id=userid)
+            user = self._user_list.get_user(id_)
+            if user is not None:
+                reply(conversation, user.first_name)
+                return True
+
+        reply(conversation, 'unknown')
         return True
 
     def _do_learn_forget(self, conversation, from_user, match, reply):
