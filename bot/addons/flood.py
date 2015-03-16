@@ -53,7 +53,7 @@ class _FloodAddon(Addon):
         if self._flood_start[conversation]:
             if t - self._flood_start[conversation] > self._disable_time:
                 # End of flood control
-                self._report('Not flooded anymore')
+                self.report('Not flooded anymore')
                 self._flood_start[conversation] = 0
                 self._flood_count[conversation] = 0
                 return text
@@ -67,7 +67,7 @@ class _FloodAddon(Addon):
             if self._flood_count[conversation] > self._count:
                 self._flood_count[conversation] = 0
                 self._flood_start[conversation] = t
-                self._report('Flood start at {}'.format(t))
+                self.report('Flood start at {}'.format(t))
                 reply_func(conversation, 'Flood! 😬')
                 return None
 
