@@ -213,7 +213,7 @@ class _LearnAddon(Addon):
             userid = UserID(chat_id=val[0], gaia_id=val[1])
             user = self._user_list.get_user(userid)
             if user is not None:
-                date = time.strftime('%x', time.localtime(val[2]))
+                date = time.strftime('%d/%m/%Y', time.localtime(val[2]))
                 reply(conversation, '{}, {}'.format(user.first_name, date))
                 return True
 
