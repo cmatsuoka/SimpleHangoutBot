@@ -24,15 +24,19 @@ class _LearnDatabase(Database):
     def create_table(self):
         try:
             if not self.table_exists('learn'):
-                self.query('CREATE TABLE learn(name VARCHAR PRIMARY KEY, conversation VARCHAR, user VARCHAR, pattern VARCHAR, reply VARCHAR);')
+                self.query('CREATE TABLE learn(name VARCHAR PRIMARY KEY, conversation VARCHAR, chat_id VARCHAR, gaia_id VARCHAR, pattern VARCHAR, reply VARCHAR);')
                 self.commit()
             return True
         except:
             return False
 
-    def exists(self, name):
+    def exists(self, name, conversation_id):
         try:
-            result = self.query("SELECT COUNT(name) FROM learn WHERE name='{}';".format(name))
+            if conversation_id is None:
+                result = self.query("SELECT COUNT(name) FROM learn WHERE name='{}';".format(name))
+            else:
+                result = self.query("SELECT COUNT(name) FROM learn WHERE name='{}' AND conversation='{}';".format(name, conversation_id))
+
             for l in result:
                 return int(l[0]) > 0
         except:
@@ -41,7 +45,7 @@ class _LearnDatabase(Database):
 
     def insert(self, name, conversation_id, user_id, pattern, reply):
         try:
-            self.query("INSERT INTO learn(name, conversation, user, pattern, reply) VALUES ('{}','{}','{}','{}','{}');".format(name, conversation_id, user_id, pattern, reply))
+            self.query("INSERT INTO learn(name, conversation, chat_id, gaia_id, pattern, reply) VALUES ('{}','{}','{}','{}','{}','{}');".format(name, conversation_id, user_id.chat_id, user_id.gaia_id, pattern, reply))
             self.commit()
             return True
         except:
@@ -75,11 +79,11 @@ class _LearnDatabase(Database):
 
     def show_author(self, name, conversation_id):
         if conversation_id is None:
-            result = self.query("SELECT user FROM learn WHERE name='{}';".format(name))
+            result = self.query("SELECT chat_id,gaia_id FROM learn WHERE name='{}';".format(name))
         else:
-            result = self.query("SELECT user FROM learn WHERE name='{}' AND conversation='{}';".format(name, conversation_id))
+            result = self.query("SELECT chat_id,gaia_id FROM learn WHERE name='{}' AND conversation='{}';".format(name, conversation_id))
         for l in result:
-            return l[0]
+            return (l[0], l[1])
         return None
 
     def retrieve(self):
@@ -160,13 +164,13 @@ class _LearnAddon(Addon):
         pattern = match.group(2)
         myreply = match.group(3)
 
-        if self._db.exists(name):
+        if self._db.exists(name, None):
             self.report('Attempt to redefine ' + name)
             reply(conversation, 'Redefine.')
             return True
 
         self.report('learn {} /{}/ -> {}'.format(name, pattern, myreply))
-        self._db.insert(name, conversation.id_, from_user.id_.gaia_id, pattern, myreply)
+        self._db.insert(name, conversation.id_, from_user.id_, pattern, myreply)
         self._knowledge = self._db.retrieve()
         reply(conversation, 'Ok.')
         return True
@@ -198,11 +202,16 @@ class _LearnAddon(Addon):
         else:
             conv = None
         name = match.group(1)
-        userid = self._db.show_author(name, conv)
 
-        if userid is not None:
-            id_ = UserID(chat_id=userid, gaia_id=userid)
-            user = self._user_list.get_user(id_)
+        if not self._db.exists(name, conversation.id_):
+            reply(conversation, '{}?'.format(name))
+            return True
+
+        val = self._db.show_author(name, conv)
+
+        if val is not None:
+            userid = UserID(chat_id=val[0], gaia_id=val[1])
+            user = self._user_list.get_user(userid)
             if user is not None:
                 reply(conversation, user.first_name)
                 return True

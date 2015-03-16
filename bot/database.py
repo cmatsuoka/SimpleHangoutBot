@@ -2,6 +2,7 @@
 
 import os
 import sqlite3
+import pickle
 
 class Database(object):
     def __init__(self, addon):
@@ -35,3 +36,4 @@ class Database(object):
 
     def report(self, text):
         self._addon.report('Database: ' + text)
+
