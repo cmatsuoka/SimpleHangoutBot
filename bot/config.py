@@ -54,6 +54,9 @@ class Config:
     def getint(self, section, option):
         return self._config.getint(section, option)
 
+    def getboolean(self, section, option):
+        return self._config.getboolean(section, option)
+
     def items(self, section):
         return self._config.items(section)
 

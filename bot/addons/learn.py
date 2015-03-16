@@ -75,6 +75,14 @@ class _LearnAddon(Addon):
         self._db.create_table()
         self._knowledge = self._db.retrieve()
 
+	# Configuration
+
+        s = _NAME.capitalize()
+        if config.has_options(s, [ 'isolation' ]):
+            self._isolation = config.getboolean(s, 'isolation')
+        else:
+            config.add_option(s, 'isolation', 'True')
+
     def get_parsers(self):
         return [
             (r'^/learn help\s*$', self._do_learn_help),
@@ -97,6 +105,9 @@ class _LearnAddon(Addon):
                 conv = k[0]
                 pattern = k[1]
                 reply = k[2]
+
+                if self._isolation and conversation.id_ != conv:
+                    continue
 
                 regex = re.compile(pattern)
                 match = regex.search(text)
@@ -137,7 +148,7 @@ class _LearnAddon(Addon):
     def _do_learn_help(self, conversation, from_user, match, reply):
         reply(conversation, '/learn name /regexp/ reply')
         reply(conversation, '/learn forget name')
-        reply(conversation, 'Special vars: $ME $YOU $CONV $1, $2...')
+        reply(conversation, 'Special vars: $ME $YOU $1, $2...')
         return True
 
 ADDON[_NAME] = _LearnAddon
