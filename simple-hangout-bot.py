@@ -148,10 +148,10 @@ class SimpleHangoutBot(object):
                     for match in re.finditer(r,text):
                         report("Pattern match: '{}'".format(match.group()))
                         ret = fn(conversation, user, match, reply_func)
-                        if ret is False:
+                        if ret is True:
                             report('Input consumed')
                             return ret
-                return True
+                return False 
             except Exception as e:
                 report('Error handling msg: {}'.format(e))
 
