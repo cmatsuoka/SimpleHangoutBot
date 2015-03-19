@@ -194,6 +194,8 @@ class SimpleHangoutBot(object):
         for addon in self._addons:
             addon.on_disconnect()
 
+        self._conv_list.on_event.remove_observer(self._on_event)
+
         report('Disconnected!')
 
     def _on_event(self, conv_event):
