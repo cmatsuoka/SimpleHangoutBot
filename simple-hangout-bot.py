@@ -147,10 +147,11 @@ class SimpleHangoutBot(object):
                 for r,fn in self._parsers:
                     for match in re.finditer(r,text):
                         report("Pattern match: '{}'".format(match.group()))
-                        r = fn(conversation, user, match, reply_func)
-                        if not r:
-                            return r
-                return True
+                        ret = fn(conversation, user, match, reply_func)
+                        if ret is True:
+                            report('Input consumed')
+                            return ret
+                return False 
             except Exception as e:
                 report('Error handling msg: {}'.format(e))
 
@@ -192,6 +193,8 @@ class SimpleHangoutBot(object):
 
         for addon in self._addons:
             addon.on_disconnect()
+
+        self._conv_list.on_event.remove_observer(self._on_event)
 
         report('Disconnected!')
 
