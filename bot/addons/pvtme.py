@@ -8,8 +8,9 @@ This addon forward group chat messages to users in private based on predefined k
 
 from ..addon import Addon, ADDON
 from ..database import Database
-from datetime import datetime
 
+from datetime import datetime
+from string import punctuation
 
 _NAME = 'pvtme'
 
@@ -33,7 +34,7 @@ class _PvtMeDatabase(Database):
             return False
 
     def insert_keywords(self, user_id, conversation_id, keywords):
-        if (not keywords or keywords == ""):
+        if (not keywords or keywords == ''):
             return False
 
         try:
@@ -81,7 +82,7 @@ class _PvtMeAddon(Addon):
         ]
 
     def get_filters(self):
-        return [ self._check_match ]
+        return [self._check_match]
 
     def _check_match(self, conversation, user, text, reply_func):
         if text.startswith('/') or user.is_self:
@@ -91,40 +92,55 @@ class _PvtMeAddon(Addon):
         for user_id in keywords:
             if user_id == user.id_.chat_id:
                 continue
-            for keyword in keywords[user_id].split(","):
-                if (text.rfind(keyword) != -1):
+            for keyword in keywords[user_id].split(','):
+                if keyword.lower() in text.lower():
                     self.report('found keyword')
-                    self._send_user_message(user_id,'({}) - {}: {}'.format(datetime.now().strftime('%d/%m %I:%M%p'), user.first_name, text))
-
+                    self._send_user_message(user_id, '({}) - {}: {}'.format(datetime.now().strftime('%d/%m %I:%M%p'), user.first_name, text))
                     break
         return text
 
     def _set_keywords(self, conversation, from_user, match, reply):
         keywords = match.group(1).lower()
-        self.report('set keyword: ' + keywords)
-        if (self._db.insert_keywords(from_user.id_.chat_id, conversation.id_, keywords)):
-            reply(conversation, "Tá bom, {}. Eu te aviso".format(from_user.first_name))
+
+        # hackish, so we can sanitize it
+        keywords = keywords.replace(' ', '')
+        keywords = keywords.split(',')
+        if len(keywords) > 1:
+            keywords = set(keywords)
+        self.report('set keywords: {}'.format(keywords))
+        keywords = ','.join(set(keywords))
+
+        try:
+            self._db.insert_keywords(from_user.id_.chat_id, conversation.id_, keywords)
+        except Exception as e:
+            self.report('Error inserting into DB: {}'.format(e))
+            reply(conversation, 'Não vou poder te avisar, {}! Desculpa :-('.format(from_user.first_name))
         else:
-            reply(conversation, "Não vou poder te avisar, {}! Desculpe-me :(".format(from_user.first_name))
+            reply(conversation, 'Tá bom, {}. Eu te aviso.'.format(from_user.first_name))
 
     def _dump_keywords(self, conversation, from_user, match, reply):
-        self.report('dump keywords')
-        res = self._db.get_keywords(from_user.id_.chat_id, conversation.id_)
-        if not res:
-            reply(conversation, "Não achei nada aqui para você, {}.".format(from_user.first_name))
+        res = None
+        try:
+            res = self._db.get_keywords(from_user.id_.chat_id, conversation.id_)
+            self.report('dump keywords: {}'.format(res))
+        except Exception as e:
+            self.report('Error inserting into DB: {}'.format(e))
+            reply(conversation, 'Não achei nada aqui para você, {}.'.format(from_user.first_name))
         else:
-            reply(conversation, "Keywords para {}: {}".format(from_user.first_name, res))
+            reply(conversation, 'Keywords para {}: {}'.format(from_user.first_name, res))
 
     def _clear_keywords(self, conversation, from_user, match, reply):
         self.report('clear keywords')
-        if(self._db.clear_keywords(from_user.id_.chat_id, conversation.id_)):
-            reply(conversation, "Tá bom, não te incomodo mais!")
+        try:
+            self._db.clear_keywords(from_user.id_.chat_id, conversation.id_)
+        except Exception as e:
+            self.report('error inserting into DB: {}'.format(e))
+            reply(conversation, 'Não consegui limpar as keywords :-(')
         else:
-            reply(conversation, "Não consegui limpar as keywords :(")
+            reply(conversation, 'Tá bom, não te incomodo mais!')
 
     def _show_help(self, conversation, from_user, match, reply):
-        reply(conversation, "Uso: /pvtme (set,clear,dump) [keyword,keyword2]")
+        reply(conversation, 'Uso: /pvtme (set,clear,dump) [keyword,keyword2]')
 
 
 ADDON[_NAME] = _PvtMeAddon
-

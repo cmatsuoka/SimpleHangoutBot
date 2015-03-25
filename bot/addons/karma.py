@@ -48,7 +48,11 @@ class _KarmaDatabase(Database):
             q += ' desc'
         result = self.query(q)
         karmas = ''
+        exclude = ['test', 'teste', 'karma', 'karmas',
+                   'ping', 'oi,' 'bla', 'blah', 'foo', 'foobar']
         for l in result:
+            if l[0] in exclude:
+                continue
             item = (l[0]) + ' = ' + str(l[1])
             if len(karmas) == 0:
                 append = item
