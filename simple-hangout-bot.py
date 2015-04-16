@@ -99,10 +99,7 @@ class SimpleHangoutBot(object):
                     sys.exit(0)
                 except Exception as e:
                     report('Client disconnected: {}'.format(e))
-                    wait = tries * 5
-                    if wait > 300:
-                        wait = 300
-                    time.sleep(wait)
+                    time.sleep(10)
                     report('Connecting again ({})'.format(tries))
 
             report('Exiting!')
